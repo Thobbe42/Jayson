@@ -8,6 +8,7 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     `java-library`
+    id("com.diffplug.spotless") version "6.25.0"
 }
 
 repositories {
@@ -35,4 +36,16 @@ java {
 tasks.named<Test>("test") {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform()
+}
+
+
+spotless {
+    java {
+        googleJavaFormat() // Uses Google's formatter (you can also use eclipse() if preferred)
+        target("src/**/*.java")
+    }
+}
+
+tasks.named("check") {
+    dependsOn("spotlessCheck")
 }
