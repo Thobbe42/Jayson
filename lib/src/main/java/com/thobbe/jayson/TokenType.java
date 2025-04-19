@@ -11,6 +11,7 @@ public enum TokenType {
   NUMBER("-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?"),
   BOOLEAN("true|false"),
   NULL("null"),
+  ERROR("error"),
   EOF("<eof>");
 
   final String pattern;
