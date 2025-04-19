@@ -2,23 +2,28 @@ package com.thobbe.jayson;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Deque;
 
 public class Tokenizer {
 
-  private final InputStream is;
+  private final Reader reader;
   private StringBuilder spelling;
   private int current;
 
   public Tokenizer(InputStream is) throws IOException {
-    this.is = is;
-    current = is.read();
+    reader = new InputStreamReader(is, StandardCharsets.UTF_8);
+    current = reader.read();
   }
 
   public Deque<Token> tokenize() {
     Deque<Token> tokens = new ArrayDeque<>();
     while (current != -1) {
+
+      while (current == ' ' || current == '\n' || current == '\r' || current == '\t') skip();
 
       spelling = new StringBuilder();
       TokenType type = scanToken();
@@ -30,14 +35,14 @@ public class Tokenizer {
   }
 
   private void take() {
-    spelling.append(current);
+    spelling.append((char) current);
     skip();
   }
 
   private void skip() {
     try {
       int old = current;
-      current = is.read();
+      current = reader.read();
       if (old == -1 && current == -1) {
         throw new RuntimeException("Reached EOF while scanning");
       }
@@ -58,6 +63,7 @@ public class Tokenizer {
       switch (current) {
         case '"':
         case '\\':
+        case '/':
           take();
           break;
         case 'n':
@@ -70,6 +76,14 @@ public class Tokenizer {
           break;
         case 't':
           spelling.append('\t');
+          skip();
+          break;
+        case 'b':
+          spelling.append('\b');
+          skip();
+          break;
+        case 'f':
+          spelling.append('\f');
           skip();
           break;
         default:
