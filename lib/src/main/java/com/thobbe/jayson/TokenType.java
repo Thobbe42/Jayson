@@ -8,8 +8,7 @@ public enum TokenType {
   COMMA(","),
   COLON(":"),
   STRING("\".*?\""),
-  INT("\\d+"),
-  FLOAT("\\d+.\\d+"),
+  NUMBER("-?\\d+(\\.\\d+)?([eE][+-]?\\d+)?"),
   BOOLEAN("true|false"),
   NULL("null"),
   EOF("<eof>");
