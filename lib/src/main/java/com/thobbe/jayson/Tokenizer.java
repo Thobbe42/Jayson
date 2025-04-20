@@ -53,7 +53,7 @@ public class Tokenizer {
 
   private TokenType scanString() {
     skip();
-    while (current != '"') {
+    while (current != '"' && current != -1) {
       if (current != '\\') {
         take();
         continue;
@@ -86,12 +86,21 @@ public class Tokenizer {
           spelling.append('\f');
           skip();
           break;
+        case 'u':
+          skip();
+          spelling.append(parseUnicode());
+          break;
         default:
           System.err.println("Invalid escape sequence: \\" + current);
           take();
           break;
       }
     }
+
+    if (current == -1) {
+      return TokenType.ERROR;
+    }
+
     skip();
     return TokenType.STRING;
   }
@@ -180,12 +189,61 @@ public class Tokenizer {
     };
   }
 
+  private String parseUnicode() {
+    StringBuilder hex = new StringBuilder();
+    for (int i = 0; i < 4; i++) {
+      if (!isHexDigit(current)) {
+        throw new RuntimeException("Invalid Unicode escape sequence");
+      }
+      hex.append((char) current);
+      skip();
+    }
+
+    int codeUnit = Integer.parseInt(hex.toString(), 16);
+
+    if (Character.isHighSurrogate((char) codeUnit)) {
+      // Try to parse the low surrogate
+      if (current == '\\') {
+        skip();
+        if (current == 'u') {
+          skip();
+          StringBuilder lowHex = new StringBuilder();
+          for (int i = 0; i < 4; i++) {
+            if (!isHexDigit(current)) {
+              throw new RuntimeException("Invalid low surrogate in Unicode escape");
+            }
+            lowHex.append((char) current);
+            skip();
+          }
+
+          int lowCodeUnit = Integer.parseInt(lowHex.toString(), 16);
+          if (Character.isLowSurrogate((char) lowCodeUnit)) {
+            int codePoint = Character.toCodePoint((char) codeUnit, (char) lowCodeUnit);
+            return new String(Character.toChars(codePoint));
+          } else {
+            throw new RuntimeException("Expected low surrogate after high surrogate");
+          }
+        } else {
+          throw new RuntimeException("Expected \\u after high surrogate");
+        }
+      } else {
+        throw new RuntimeException("Expected \\u after high surrogate");
+      }
+    }
+
+    return new String(Character.toChars(codeUnit));
+  }
+
   private boolean isLetter(int c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
   }
 
   private boolean isDigit(int c) {
     return (c >= '0' && c <= '9');
+  }
+
+  private boolean isHexDigit(int c) {
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
   }
 
   private boolean isDelimiter(int c) {
