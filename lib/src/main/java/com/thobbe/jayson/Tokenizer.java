@@ -151,10 +151,9 @@ public class Tokenizer {
   }
 
   private TokenType scanKeyword() {
-    take();
-    while (!isDelimiter(current)) {
+    do {
       take();
-    }
+    } while (!isDelimiter(current));
 
     String value = spelling.toString();
     if (value.equals("null")) {
@@ -195,7 +194,7 @@ public class Tokenizer {
   private String parseUnicode() {
     StringBuilder hex = new StringBuilder();
     for (int i = 0; i < 4; i++) {
-      if (!isHexDigit(current)) {
+      if (notIsHexDigit(current)) {
         throw new RuntimeException("Invalid Unicode escape sequence");
       }
       hex.append((char) current);
@@ -212,7 +211,7 @@ public class Tokenizer {
           skip();
           StringBuilder lowHex = new StringBuilder();
           for (int i = 0; i < 4; i++) {
-            if (!isHexDigit(current)) {
+            if (notIsHexDigit(current)) {
               throw new RuntimeException("Invalid low surrogate in Unicode escape");
             }
             lowHex.append((char) current);
@@ -245,8 +244,8 @@ public class Tokenizer {
     return (c >= '0' && c <= '9');
   }
 
-  private boolean isHexDigit(int c) {
-    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+  private boolean notIsHexDigit(int c) {
+    return (c < '0' || c > '9') && (c < 'a' || c > 'f') && (c < 'A' || c > 'F');
   }
 
   private boolean isDelimiter(int c) {
