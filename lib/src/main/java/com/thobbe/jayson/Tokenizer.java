@@ -111,8 +111,11 @@ public class Tokenizer {
       take();
     }
 
-    if (current == 0) {
+    if (current == '0') {
       take();
+      if (isDigit(current)) {
+        return TokenType.ERROR;
+      }
     } else if (isDigit(current)) {
       while (isDigit(current)) {
         take();
