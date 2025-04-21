@@ -14,11 +14,23 @@ public class Parser {
     currentToken = tokens.poll();
   }
 
-  private void advance() {}
+  private void advance() {
+    currentToken = tokens.poll();
+  }
 
-  private void expect(TokenType expected) {}
+  private void expect(TokenType expected) {
+    if (!currentToken.type().equals(expected)) {
+      throw new RuntimeException(
+          "Unexpected token type: expected " + expected + "but got " + currentToken.type());
+    }
+    advance();
+  }
 
   private boolean match(TokenType type) {
+    if (currentToken.type().equals(type)) {
+      advance();
+      return true;
+    }
     return false;
   }
 
