@@ -1,5 +1,6 @@
 package com.thobbe.jayson;
 
+import java.math.BigInteger;
 import java.util.*;
 
 public class Parser {
@@ -97,7 +98,11 @@ public class Parser {
     if (value.contains(".") || value.contains("e") || value.contains("E")) {
       return Double.valueOf(value);
     } else {
-      return Long.valueOf(value);
+      try {
+        return Long.parseLong(value);
+      } catch (NumberFormatException e) {
+        return new BigInteger(value);
+      }
     }
   }
 
