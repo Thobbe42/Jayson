@@ -14,11 +14,20 @@ public class Tokenizer {
   private StringBuilder spelling;
   private int current;
 
+  /**
+   * @param is An InputStream on the JSON data to tokenize
+   * @throws IOException Exception is thrown if no InputStreamReader can be opened on the input
+   */
   public Tokenizer(InputStream is) throws IOException {
     reader = new InputStreamReader(is, StandardCharsets.UTF_8);
     current = reader.read();
   }
 
+  /**
+   * Run this tokenizer to structure JSON data into single JSON spec compliant tokens
+   *
+   * @return A Deque of tokens containing all the tokens gathered from the InputStream
+   */
   public Deque<Token> tokenize() {
     Deque<Token> tokens = new ArrayDeque<>();
     while (current != -1) {
@@ -34,11 +43,13 @@ public class Tokenizer {
     return tokens;
   }
 
+  /** Consumes a single character and appends it to the current spelling */
   private void take() {
     spelling.append((char) current);
     skip();
   }
 
+  /** Skips a character and additionally checks, if an EOF has been reached while scanning */
   private void skip() {
     try {
       int old = current;
@@ -51,6 +62,11 @@ public class Tokenizer {
     }
   }
 
+  /**
+   * Scan a String value. This includes escape sequences as well
+   *
+   * @return A STRING token if a spec conform String is scanned, otherwise an ERROR token
+   */
   private TokenType scanString() {
     skip();
     while (current != '"' && current != -1) {
@@ -105,6 +121,11 @@ public class Tokenizer {
     return TokenType.STRING;
   }
 
+  /**
+   * Scans a number. This includes negatives, fractals and scientific exponential notation
+   *
+   * @return A NUMBER token if a spec compliant number is scanned, an ERROR token otherwise
+   */
   private TokenType scanNumber() {
 
     if (current == '-') {
@@ -150,6 +171,12 @@ public class Tokenizer {
     return TokenType.NUMBER;
   }
 
+  /**
+   * Scans for keywords. Keywords here are values like true/false and null, that are not handled as
+   * strings
+   *
+   * @return A BOOLEAN or NULL token depending on keyword, ERROR token otherwise
+   */
   private TokenType scanKeyword() {
     do {
       take();
@@ -165,6 +192,12 @@ public class Tokenizer {
     return TokenType.ERROR;
   }
 
+  /**
+   * Scans a single token. This includes string, numbers, keywords, but also syntactical JSON
+   * characters
+   *
+   * @return The type of the scanned token
+   */
   private TokenType scanToken() {
 
     if (isLetter(current)) {
@@ -191,6 +224,12 @@ public class Tokenizer {
     };
   }
 
+  /**
+   * Parses a Unicode escape sequence in the form of \\uXXXX. Also checks if it is part of a
+   * surrogate pair, and parses the low surrogate as well if possible
+   *
+   * @return A String consisting of the parsed Unicode characters
+   */
   private String parseUnicode() {
     StringBuilder hex = new StringBuilder();
     for (int i = 0; i < 4; i++) {
