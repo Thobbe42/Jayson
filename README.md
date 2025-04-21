@@ -6,7 +6,7 @@ Why? Because it's funny. And I was bored.
 ### Features
 #### Tokenizer
 A (hopefully) fully JSON spec compliant tokenizer. Splits the JSON data into a token stream.
-Can not currently be used independantly of the parser, because I forgot to add that.
+Can not currently be used independently of the parser, because I forgot to add that.
 Might do that sometime else.
 
 #### Parser
