@@ -61,12 +61,15 @@ public class Parser {
 
     Map<String, Object> object = new HashMap<>();
 
-    while (match(TokenType.STRING)) {
-      String key = parseString();
-      expect(TokenType.COLON);
-      Object value = parseValue();
+    if (currentToken.type().equals(TokenType.STRING)) {
 
-      object.put(key, value);
+      do {
+        String key = parseString();
+        expect(TokenType.COLON);
+        Object value = parseValue();
+
+        object.put(key, value);
+      } while (match(TokenType.COMMA));
     }
 
     expect(TokenType.R_BRACE);
@@ -77,7 +80,7 @@ public class Parser {
     expect(TokenType.L_BRACKET);
     List<Object> array = new ArrayList<>();
 
-    if (!match(TokenType.R_BRACKET)) {
+    if (!currentToken.type().equals(TokenType.R_BRACKET)) {
       do {
         array.add(parseValue());
       } while (match(TokenType.COMMA));
@@ -95,6 +98,7 @@ public class Parser {
 
   private Number parseNumber() {
     String value = currentToken.value();
+    advance();
     if (value.contains(".") || value.contains("e") || value.contains("E")) {
       return Double.valueOf(value);
     } else {
